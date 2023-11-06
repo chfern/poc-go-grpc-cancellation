@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/chfern/poc-go-grpc-cancellation/ping/proto"
 	pongProto "github.com/chfern/poc-go-grpc-cancellation/pong/proto"
@@ -19,7 +21,10 @@ type helloService struct {
 
 // HelloPong calls pong service and return the result from it
 func (h *helloService) HelloPong(ctx context.Context, spec *proto.HelloSpec) (*proto.HelloResult, error) {
-	pongHelloResult, err := h.pongClient.Hello(ctx, &pongProto.HelloSpec{
+	ctxWithDeadline, cancelFn := context.WithTimeoutCause(ctx, 1*time.Second, errors.New("ping timeout exceeded"))
+	defer cancelFn()
+
+	pongHelloResult, err := h.pongClient.Hello(ctxWithDeadline, &pongProto.HelloSpec{
 		Payload: spec.Payload,
 	})
 	if err != nil {

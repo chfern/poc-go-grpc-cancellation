@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/chfern/poc-go-grpc-cancellation/pong/proto"
 	"google.golang.org/grpc"
@@ -15,6 +17,16 @@ type helloService struct {
 }
 
 func (h *helloService) Hello(ctx context.Context, spec *proto.HelloSpec) (*proto.HelloResult, error) {
+	time.Sleep(2 * time.Second) // intentionally sleep
+
+	if ctx.Err() != nil { // context should've been canceled at this point
+		cause := context.Cause(ctx)
+		fmt.Printf("context err: %v\n", ctx.Err())
+		fmt.Printf("context err cause: %v\n", cause)
+
+		return nil, errors.New("timeout")
+	}
+
 	return &proto.HelloResult{
 		Payload: fmt.Sprintf("Hello: %s", spec.Payload),
 	}, nil
