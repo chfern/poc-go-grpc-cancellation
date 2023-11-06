@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package github_com.chfern.poc_go_grpc_cancellation.pong.proto;
+
+option go_package = "github.com/chfern/poc-go-grpc-cancellation/pong/proto";
+
+message HelloSpec {
+  string payload = 1;
+}
+
+message HelloResult {
+  string payload = 1;
+}
+
+service HelloService {
+  rpc Hello(HelloSpec) returns (HelloResult);
+}
